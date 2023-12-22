@@ -8,21 +8,17 @@ import struct
 import sys
 import os
 
-# TFTP opcode
 OPCODE_RRQ = 1
 OPCODE_WRQ = 2
 OPCODE_DATA = 3
 OPCODE_ACK = 4
 OPCODE_ERROR = 5
 
-# TFTP modes
 MODE_OCTET = b'octet'
 
-# TFTP error codes
 ERROR_FILE_NOT_FOUND = 1
 ERROR_ACCESS_VIOLATION = 2
 ERROR_DISK_FULL = 3
-# Add more error codes as needed
 
 def create_rrq_packet(filename):
     # Create RRQ (Read Request) packet
