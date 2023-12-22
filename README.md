@@ -2,23 +2,25 @@
 네트워크 기말과제
 이 과제는 네트워크 프로그래밍 기말과제 입니다.
 
-import argparse
 import socket
 import struct
 import sys
-import os
 
+# TFTP opcode
 OPCODE_RRQ = 1
 OPCODE_WRQ = 2
 OPCODE_DATA = 3
 OPCODE_ACK = 4
 OPCODE_ERROR = 5
 
+# TFTP modes
 MODE_OCTET = b'octet'
 
+# TFTP error codes
 ERROR_FILE_NOT_FOUND = 1
 ERROR_ACCESS_VIOLATION = 2
 ERROR_DISK_FULL = 3
+# Add more error codes as needed
 
 def create_rrq_packet(filename):
     # Create RRQ (Read Request) packet
@@ -37,8 +39,9 @@ def parse_data_packet(data):
     opcode, block_number = struct.unpack('!HH', data[:4])
     return opcode, block_number, data[4:]
 
-def send_file(filename, server_ip, server_port, mode):
+def send_file(filename, server_ip, server_port, mode, client_port=0):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket.bind(('', client_port))
     client_socket.settimeout(5)  # Set timeout to 5 seconds
 
     try:
@@ -117,17 +120,22 @@ def send_file(filename, server_ip, server_port, mode):
         client_socket.close()
 
 def main():
-    parser = argparse.ArgumentParser(description='TFTP Client')
-    parser.add_argument('host', help='TFTP server IP address')
-    parser.add_argument('operation', choices=['get', 'put'], help='Operation: get or put')
-    parser.add_argument('filename', help='Filename')
-    parser.add_argument('-p', '--port', type=int, default=69, help='Server port (default: 69)')
-    args = parser.parse_args()
+    if len(sys.argv) < 4 or len(sys.argv) > 6:
+        print("Usage: mytftp host_address [get|put] filename [-p port_number]")
+        return
 
-    server_ip = args.host
-    server_port = args.port
-    mode = args.operation
-    filename = args.filename
+    server_ip = sys.argv[1]
+    mode = sys.argv[2]
+    filename = sys.argv[3]
+    server_port = 69  # Default TFTP port
+
+    if '-p' in sys.argv:
+        port_index = sys.argv.index('-p')
+        try:
+            server_port = int(sys.argv[port_index + 1])
+        except (ValueError, IndexError):
+            print("Invalid port number.")
+            return
 
     send_file(filename, server_ip, server_port, mode)
 
